@@ -8,10 +8,34 @@
   <title>{% block title %}TITLE GOES HERE{% endblock %}</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+      .button, button {
+        background-color: #369;
+        color: #fff;
+        text-decoration: none;
+        padding: 5px 15px;
+        border-radius: 5px;
+        outline: none;
+      }
+      .button:hover, button:hover {
+        color: #ccc;
+        text-decoration: none;
+      }
+    </style>
 </head>
 
 <body>
+  <div style="text-align: right; padding:10px; border-bottom: 1px solid #ccc;">
+    {% if 'username' in session %}
+      <a href="/logout" class="button">Log Out</a>
+    {% else %}
+    <a href="/login" class="button">Log In</a>
+    {% endif %}
+  </div>
   <h1>{% block header %}HEADER GOES HERE{% endblock %}</h1>
+  {% for message in get_flashed_messages() %}
+    <p class="alert-success" style="text-align: center; padding: 15px; border-radius: 10px;">{{ message }}</p>
+  {% endfor %}
   {% block content %}CONTENT GOES HERE{% endblock %}
 
 
