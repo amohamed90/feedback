@@ -52,4 +52,4 @@ class Feedback(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text(), nullable=False)
     username = db.Column(db.String(20), db.ForeignKey('users.username'))
-    user = db.relationship('User', backref='feedback')
+    user = db.relationship('User', backref='feedback', cascade="all")

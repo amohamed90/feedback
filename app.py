@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, flash, session
 from models import db, connect_db, User, Feedback
 from flask_debugtoolbar import DebugToolbarExtension
-from forms import Register, Login
+from forms import Register, Login, UpdateFeedback, AddFeedback
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "DHFGUSRGHUISHGUISHG"
@@ -77,9 +77,72 @@ def secret_page(username):
         feedback = Feedback.query.filter(Feedback.username == username)
         return render_template("secret.html", user=user, feedback=feedback)
 
+@app.route("/users/<username>/delete", methods=["POST"])
+def delete_user(username):
+
+    username = User.query.get_or_404(username)
+
+    db.session.delete(username)
+    db.session.commit()
+    session.pop("username")
+    return redirect("/")
+
 
 @app.route("/logout")
 def logout():
     session.pop("username")
 
     return redirect("/")
+
+@app.route("/feedback/<feedback_id>/delete", methods=["POST"])
+def delete_feedback(feedback_id):
+
+    feedback = Feedback.query.get_or_404(feedback_id)
+    username = feedback.username
+
+    db.session.delete(feedback)
+    db.session.commit()
+    return redirect(f'/users/{username}')
+
+@app.route("/feedback/<feedback_id>/update", methods=["GET", "POST"])
+def update_feedback(feedback_id):
+
+    feedback = Feedback.query.get_or_404(feedback_id)
+    form = UpdateFeedback(obj=feedback)
+
+    if session["username"] == feedback.username:
+        if form.validate_on_submit():
+
+            feedback.title = form.title.data
+            feedback.content = form.content.data
+
+            db.session.commit()
+            return redirect("/users/" + session["username"])
+        else:
+            return render_template("update_feedback.html", form=form)
+
+    else:
+        return redirect("/users/" + session["username"])
+
+@app.route("/users/<username>/feedback/add", methods=["POST", "GET"])
+def add_feedback(username):
+
+    form = AddFeedback()
+
+    if session["username"] == username:
+        if form.validate_on_submit():
+            title = form.title.data
+            content = form.content.data
+
+            feedback = Feedback(title, content, username)
+
+            db.session.add(feedback)
+            db.session.commit()
+
+            return redirect(f"/users/{username}")
+        else:
+            return render_template("add_feedback.html", form=form)
+    else:
+        return redirect("/users/" + session["username"] + "/feedback/add")
+
+
